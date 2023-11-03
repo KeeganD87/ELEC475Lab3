@@ -21,6 +21,7 @@ def save_loss_plot(losses_train: list, save_path: str):
     plt.savefig(save_path)
     plt.close()
 
+#Get device for training (CPU/CUDA)
 def get_device(is_cuda: str):
     if(is_cuda.lower() == 'y' and torch.cuda.is_available()):
         return torch.device("cuda")
@@ -40,6 +41,7 @@ def train_transform():
     ])
 
 def test_transform():
+    #Define testing data transformation
     return transforms.Compose()([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
@@ -85,11 +87,11 @@ def main(args):
     train_set = torchvision.datasets.CIFAR10(root='../data', train=True, download=True, transform=train_transform())
     train_loader = DataLoader(train_set, batch_size=args.b, shuffle=True, num_workers=2)
 
-    encoder = net.encoder_decoder.encoder
+    encoder = net.encoder_decoder.encoder #Load model encoder
     encoder.load_state_dict(torch.load(args.l))
 
     num_classes = 10
-    model = net.Model(encoder, num_classes)
+    model = net.Model(encoder, num_classes) #Create new model using encoder
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
