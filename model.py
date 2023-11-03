@@ -1,11 +1,6 @@
-#   Partial implementation of:
-#       Huang & Belongie, "Arbitrary Style Transfer in Real-Time with Adaptive Instance Normalization", arXiv:1703.06868v2, 30 July 2017
-#
-#   Adapted from:
-#       https://github.com/naoto0804/pytorch-AdaIN
-#
-
+import torch
 import torch.nn as nn
+from ml_decoder import MLDecoder
 
 class encoder_decoder:
     encoder = nn.Sequential(
@@ -72,3 +67,43 @@ class encoder_decoder:
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(64, 3, (3, 3)),
     )
+
+class Model(nn.Module):
+    def __init__(self, encoder: nn.Sequential, decoder=None, num_classes=10, freeze_weights=True):
+        super(Model, self).__init__()
+
+        #Extract the first 32 layers from the encoder for feature extraction
+        encoder_list = list(encoder.children())
+        self.encoder = nn.Sequential(*encoder_list[:31])
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),   #Flatten input
+            nn.Linear(in_features=401408, out_features=1024),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(1024, 256),
+            nn.ReLU(),
+            nn.Linear(256, num_classes)
+        )
+
+        if freeze_weights:
+            for param in self.encoder.parameters():
+                param.requires_grad = False
+
+    def init_decoder_weights(self, mean, std):
+        #Initialize decoder weights with a normal distribution
+        for param in self.decoder.parameters():
+            nn.init.normal_(param, mean=mean, std=std)
+
+    def encode(self, x) -> torch.Tensor:
+        #Forward pass through encoder
+        return self.encoder(x)
+
+    def decode(self, x) -> torch.Tensor:
+        #Forward pass through classifier
+        return self.classifier(x)
+
+    def forward(self, x) -> torch.Tensor:
+        #Forward pass through model
+        x = self.encode(x)
+        return self.decode(x)
