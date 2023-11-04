@@ -19,7 +19,7 @@ def singleImageTest():
     encoder.load_state_dict(torch.load("../encoder.pth"))
 
     model = net.Model(encoder, num_classes=10)
-    model.load_state_dict(torch.load("../classification_head-2.pth"))
+    model.load_state_dict(torch.load("../classification_head.pth"))
     model.eval()
 
     #Select random image from test set

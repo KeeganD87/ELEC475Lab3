@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from ml_decoder import MLDecoder
 
 class encoder_decoder:
     encoder = nn.Sequential(
@@ -79,7 +78,7 @@ class Model(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),   #Flatten input
-            nn.Linear(in_features=524288, out_features=1024),
+            nn.Linear(in_features=25088, out_features=1024),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(1024, 256),
@@ -90,6 +89,8 @@ class Model(nn.Module):
         if freeze_weights:
             for param in self.encoder.parameters():
                 param.requires_grad = False
+
+        self.adaptive_pool = nn.AdaptiveAvgPool1d((7, 7))
 
     def init_decoder_weights(self, mean, std):
         #Initialize decoder weights with a normal distribution
@@ -107,4 +108,5 @@ class Model(nn.Module):
     def forward(self, x) -> torch.Tensor:
         #Forward pass through model
         x = self.encode(x)
+        x = self.adaptive_pool(x)
         return self.decode(x)

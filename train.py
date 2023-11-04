@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import LRScheduler, StepLR
 import torch.nn as nn
 import datetime
 import matplotlib.pyplot as plt
+from dataloader import CIFAR10Dataset
 
 def save_loss_plot(losses_train: list, save_path: str):
     #Training loss plot
@@ -33,12 +34,18 @@ def train_transform():
         Then the model randomly crops a img_sizeximg_size portion of the image, equal to the expected input of the model
         This should help prevent model overfitting
     """
-    return transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(32, padding=4),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
+    transform_list = [
+        transforms.Resize(size=(356, 356)),
+        transforms.RandomCrop(256),
+        transforms.ToTensor()
+    ]
+    return transforms.Compose(transform_list)
+    # def target_transform(num_classes):
+    #     def _one_hot_encode(target):
+    #         one_hot_target = torch.zeros(num_classes)
+    #         one_hot_target[target] = 1
+    #         return one_hot_target
+    #     return _one_hot_encode
 
 def test_transform():
     #Define testing data transformation
