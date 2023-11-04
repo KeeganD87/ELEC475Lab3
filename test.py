@@ -16,17 +16,17 @@ def singleImageTest():
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=1, shuffle=True)
 
     encoder = net.encoder_decoder.encoder  # Load model encoder
-    encoder.load_state_dict(torch.load("../encoder.pth"))
+    encoder.load_state_dict(torch.load("encoder.pth"))
 
     model = net.Model(encoder, num_classes=10)
-    model.load_state_dict(torch.load("../classification_head.pth"))
+    model.load_state_dict(torch.load("classification_head.pth"))
     model.eval()
 
     #Select random image from test set
     random_idx = random.randint(0, len(test_set) - 1)
     image, label = test_set[random_idx]
 
-    with torch.nograd():
+    with torch.no_grad():
         image = image.unsqueeze(0)
         outputs = model(image)
 

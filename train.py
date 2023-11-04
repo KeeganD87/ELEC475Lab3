@@ -98,12 +98,12 @@ def main(args):
     encoder.load_state_dict(torch.load(args.l))
 
     num_classes = 10
-    model = net.Model(encoder, num_classes) #Create new model using encoder
+    model = net.Model(encoder, num_classes, freeze_weights=False) #Create new model using encoder
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
-    scheduler = StepLR(optimizer, step_size=30, gamma=0.1)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.01)
+    scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
     #Train loop
     losses_train = train(args.e, optimizer, model, train_loader, device, criterion, scheduler)
