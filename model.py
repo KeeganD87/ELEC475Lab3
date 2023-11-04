@@ -66,6 +66,7 @@ class encoder_decoder:
         nn.ReLU(),
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(64, 3, (3, 3)),
+        nn.ReLU() #ReLU for FC layer
     )
 
 class Model(nn.Module):
@@ -78,7 +79,7 @@ class Model(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),   #Flatten input
-            nn.Linear(in_features=401408, out_features=1024),
+            nn.Linear(in_features=524288, out_features=1024),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(1024, 256),
