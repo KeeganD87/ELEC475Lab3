@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import LRScheduler, StepLR
 import torch.nn as nn
 import datetime
 import matplotlib.pyplot as plt
-from dataloader import CIFAR10Dataset
+from dataloader import CIFAR100Dataset
 
 def save_loss_plot(losses_train: list, save_path: str):
     #Training loss plot
@@ -35,21 +35,17 @@ def train_transform():
         This should help prevent model overfitting
     """
     transform_list = [
-        transforms.Resize(size=(356, 356)),
-        transforms.RandomCrop(256),
+        transforms.Resize((64, 64)),
+        transforms.RandomCrop(64, padding=4),
+        transforms.RandomHorizontalFlip(),
         transforms.ToTensor()
     ]
     return transforms.Compose(transform_list)
-    # def target_transform(num_classes):
-    #     def _one_hot_encode(target):
-    #         one_hot_target = torch.zeros(num_classes)
-    #         one_hot_target[target] = 1
-    #         return one_hot_target
-    #     return _one_hot_encode
 
 def test_transform():
     #Define testing data transformation
     return transforms.Compose()([
+        transforms.Resize((64, 64)),
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
@@ -91,18 +87,18 @@ def main(args):
     device = get_device(args.cuda)
     print("Device: ", device)
 
-    train_set = torchvision.datasets.CIFAR10(root='../data', train=True, download=True, transform=train_transform())
+    train_set = torchvision.datasets.CIFAR100(root='../data', train=True, download=True, transform=train_transform())
     train_loader = DataLoader(train_set, batch_size=args.b, shuffle=True, num_workers=2)
 
     encoder = net.encoder_decoder.encoder #Load model encoder
     encoder.load_state_dict(torch.load(args.l))
 
-    num_classes = 10
+    num_classes = 100
     model = net.Model(encoder, num_classes, freeze_weights=False) #Create new model using encoder
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.01)
     scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
     #Train loop
