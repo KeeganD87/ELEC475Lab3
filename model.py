@@ -40,37 +40,35 @@ class encoder_decoder:
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(512, 256, (3, 3)),
         nn.ReLU(),
-        nn.Upsample(scale_factor=2, mode='nearest'),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 128, (3, 3)),
+        nn.Conv2d(256, 256, 1),  # Insert 1x1 convolution
         nn.ReLU(),
         nn.Upsample(scale_factor=2, mode='nearest'),
+
+        nn.ReflectionPad2d((1, 1, 1, 1)),
+        nn.Conv2d(256, 256, (3, 3)),
+        nn.ReLU(),
+        nn.Conv2d(256, 128, 1),  # Insert 1x1 convolution
+        nn.ReLU(),
+        nn.Upsample(scale_factor=2, mode='nearest'),
+
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(128, 128, (3, 3)),
         nn.ReLU(),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(128, 64, (3, 3)),
+        nn.Conv2d(128, 64, 1),  # Insert 1x1 convolution
         nn.ReLU(),
         nn.Upsample(scale_factor=2, mode='nearest'),
+
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(64, 64, (3, 3)),
         nn.ReLU(),
         nn.ReflectionPad2d((1, 1, 1, 1)),
         nn.Conv2d(64, 3, (3, 3)),
-        nn.ReLU() #ReLU for FC layer
+        nn.ReLU()
+
     )
 
 class Model(nn.Module):
-    def __init__(self, encoder: nn.Sequential, decoder=None, num_classes=10, freeze_weights=True):
+    def __init__(self, encoder: nn.Sequential, decoder=None, num_classes=100, freeze_weights=True):
         super(Model, self).__init__()
 
         #Extract the first 32 layers from the encoder for feature extraction
@@ -80,7 +78,7 @@ class Model(nn.Module):
         self.adaptive_pool = nn.AdaptiveAvgPool2d((7, 7))
         self.batch_norm_enc = nn.BatchNorm2d(512)
         self.batch_norm_fc1 = nn.BatchNorm1d(25088)
-        self.batch_norm_fc2 = nn.BatchNorm1d(10)
+        self.batch_norm_fc2 = nn.BatchNorm1d(100)
 
         self.classifier = nn.Sequential(
             nn.Flatten(),   #Flatten input
@@ -118,5 +116,5 @@ class Model(nn.Module):
         x = self.decode(x)
         x = self.batch_norm_fc2(x)
 
-        x = F.softmax(x, dim=1)
+        #x = F.softmax(x, dim=1)
         return x
